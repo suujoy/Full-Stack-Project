@@ -20,10 +20,10 @@ export const createLinkValidator = [
         .withMessage("Invalid URL format"),
 
     body("title")
-        .notEmpty()
-        .withMessage("Title is required")
+        .optional()
         .isLength({ min: 3 })
-        .withMessage("Title must be at least 3 characters"),
+        .withMessage("Title must be at least 3 characters")
+        .trim(),
 
     body("description")
         .optional()

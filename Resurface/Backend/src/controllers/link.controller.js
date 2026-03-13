@@ -1,12 +1,16 @@
 import savedLinkModel from "../models/savedLink.model.js";
+import { metaData } from "../utils/metadataFetcher.js";
 
 export const createLinkController = async (req, res, next) => {
     try {
-        const { url, title, description, tags } = req.body;
+        const { url } = req.body;
+
+        const meta = await metaData(url);
 
         const savedLink = await savedLinkModel.create({
             url,
-            title,
+            title: meta.title,
+            description: meta.description,
         });
 
         res.status(201).json({
@@ -26,11 +30,25 @@ export const createLinkController = async (req, res, next) => {
  */
 export const getLinksController = async (req, res, next) => {
     try {
-        const links = await savedLinkModel.find().sort({ createdAt: -1 });
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        const skip = (page - 1) * limit;
+
+        const links = await savedLinkModel
+            .find()
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        const total = await savedLinkModel.countDocuments();
 
         res.status(200).json({
             success: true,
             message: "Links fetched successfully",
+            totalPages: Math.ceil(total / limit),
+            totalLinks: total,
+            page,
             links,
         });
     } catch (err) {
@@ -51,10 +69,16 @@ export const deleteLinkController = async (req, res, next) => {
 
         const link = await savedLinkModel.findByIdAndDelete(id);
 
+        if (!link) {
+            return res.status(404).json({
+                success: false,
+                message: "Link not found",
+            });
+        }
+
         res.status(200).json({
             success: true,
             message: "Link deleted successfully",
-            link,
         });
     } catch (err) {
         next(err);
@@ -73,6 +97,13 @@ export const detailsLinkController = async (req, res, next) => {
         const { id } = req.params;
 
         const link = await savedLinkModel.findById(id);
+
+        if (!link) {
+            return res.status(404).json({
+                success: false,
+                message: "Link not found",
+            });
+        }
 
         res.status(200).json({
             success: true,
@@ -98,9 +129,16 @@ export const updateLinkController = async (req, res, next) => {
 
         const link = await savedLinkModel.findByIdAndUpdate(
             id,
-            { url, title, description, tags },
+            { $set: { url, title, description, tags } },
             { new: true },
         );
+
+        if (!link) {
+            return res.status(404).json({
+                success: false,
+                message: "Link not found",
+            });
+        }
 
         res.status(200).json({
             success: true,
