@@ -4,6 +4,12 @@ export default function initSocket(io) {
     io.on("connection", (socket) => {
         const userId = socket.handshake.query.userId;
 
+        if (!userId) {
+            console.log("Socket connected without userId");
+            socket.disconnect();
+            return;
+        }
+
         socket.userId = userId;
 
         socket.join(userId);
@@ -13,7 +19,7 @@ export default function initSocket(io) {
         registerSocketHandlers(io, socket);
 
         socket.on("disconnect", () => {
-            console.log("User disconnected:", userId);
+            console.log("User disconnected:", socket.userId);
         });
     });
 }

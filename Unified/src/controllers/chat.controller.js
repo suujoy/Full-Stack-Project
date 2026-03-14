@@ -2,20 +2,20 @@ import chatModel from "../models/chat.models.js";
 
 export const accessChatController = async (req, res, next) => {
     try {
-        const { userId } = req.body;
+        const { receiverId } = req.body;
         const currentUserId = req.user.id;
 
         let chat = await chatModel
             .findOne({
                 isGroup: false,
-                participants: { $all: [currentUserId, userId] },
+                participants: { $all: [currentUserId, receiverId] },
             })
             .populate("participants", "-password")
             .populate("lastMessage");
 
         if (!chat) {
             chat = await chatModel.create({
-                participants: [currentUserId, userId],
+                participants: [currentUserId, receiverId],
                 isGroup: false,
             });
 
@@ -47,7 +47,10 @@ export const getUserChatsController = async (req, res, next) => {
                 participants: { $in: [userId] },
             })
             .populate("participants", "-password")
-            .populate("lastMessage")
+            .populate({
+                path: "lastMessage",
+                populate: { path: "sender", select: "-password" },
+            })
             .sort({ updatedAt: -1 });
 
         res.status(200).json({
@@ -78,6 +81,11 @@ export const getSingleChatController = async (req, res, next) => {
         if (!chat) {
             return res.status(404).json({
                 message: "Chat not found",
+            });
+        }
+        if (!chat.participants.some((p) => p._id.toString() === req.user.id)) {
+            return res.status(403).json({
+                message: "You are not part of this chat",
             });
         }
 
@@ -141,6 +149,14 @@ export const renameGroupChatController = async (req, res, next) => {
     try {
         const { chatId, groupName } = req.body;
 
+        const existingChat = await chatModel.findById(chatId);
+
+        if (existingChat.groupAdmin.toString() !== req.user.id) {
+            return res.status(403).json({
+                message: "Only group admin can rename the group",
+            });
+        }
+
         const chat = await chatModel
             .findByIdAndUpdate(chatId, { groupName }, { new: true })
             .populate("participants", "-password");
@@ -170,6 +186,14 @@ export const renameGroupChatController = async (req, res, next) => {
 export const addUserToGroupController = async (req, res, next) => {
     try {
         const { chatId, userId } = req.body;
+
+        const existingChat = await chatModel.findById(chatId);
+
+        if (existingChat.groupAdmin.toString() !== req.user.id) {
+            return res.status(403).json({
+                message: "Only group admin can add users",
+            });
+        }
 
         const chat = await chatModel
             .findByIdAndUpdate(
@@ -250,7 +274,6 @@ export const removeUserFromGroupController = async (req, res, next) => {
  */
 export const deleteChatController = async (req, res, next) => {
     try {
-
         const { chatId } = req.params;
         const currentUserId = req.user.id;
 
@@ -258,35 +281,30 @@ export const deleteChatController = async (req, res, next) => {
 
         if (!chat) {
             return res.status(404).json({
-                message: "Chat not found"
+                message: "Chat not found",
             });
         }
 
         if (chat.isGroup) {
-
             if (chat.groupAdmin.toString() !== currentUserId) {
                 return res.status(403).json({
-                    message: "Only group admin can delete the group"
+                    message: "Only group admin can delete the group",
                 });
             }
-
         } else {
-
             if (!chat.participants.includes(currentUserId)) {
                 return res.status(403).json({
-                    message: "You are not part of this chat"
+                    message: "You are not part of this chat",
                 });
             }
-
         }
 
         await chatModel.findByIdAndDelete(chatId);
 
         res.status(200).json({
             success: true,
-            message: "Chat deleted successfully"
+            message: "Chat deleted successfully",
         });
-
     } catch (error) {
         next(error);
     }

@@ -6,6 +6,8 @@ import { Server } from "socket.io";
 import initSocket from "./src/socket/socket.server.js";
 import connectToDB from "./src/config/database.js";
 
+const PORT = process.env.PORT || 3000;
+
 const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
@@ -16,10 +18,10 @@ const io = new Server(httpServer, {
 
 app.set("io", io);
 
-connectToDB();
-
 initSocket(io);
 
-httpServer.listen(3000, () => {
-    console.log("Server is running on port 3000");
+connectToDB().then(() => {
+    httpServer.listen(PORT, () => {
+        console.log("Server is running on port", PORT);
+    });
 });

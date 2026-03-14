@@ -123,25 +123,28 @@ export const loginController = async (req, res, next) => {
  * @access private
  */
 
-export const getMeController = async (req, res) => {
-    const userId = req.user.id;
+export const getMeController = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
 
-    const user = await userModel.findById(userId);
-    if (!user) {
-        return res.status(401).json({
-            success: false,
-            message: "Unauthorized",
-            err: "User not found",
+        const user = await userModel.findById(userId).select("-password");
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized",
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            message: "User fetched successfully",
+            user,
         });
+    } catch (err) {
+        next(err);
     }
-
-    res.status(200).json({
-        success: true,
-        message: "User fetched successfully",
-        user,
-    });
 };
-
 
 /**
  * @name fatchAllUsersController

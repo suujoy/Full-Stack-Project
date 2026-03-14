@@ -1,22 +1,30 @@
 import messageModel from "../models/message.models.js";
 
-
 export default function registerSocketHandlers(io, socket) {
 
     socket.on("sendMessage", async (data) => {
+        try {
 
-        const { senderId, receiverId, text, chatId } = data;
+            const { receiverId, content, chatId } = data;
 
-        const message = await messageModel.create({
-            sender: senderId,
-            chat: chatId,
-            text: text
-        });
+            const message = await messageModel.create({
+                sender: socket.userId,
+                chat: chatId,
+                content: content
+            });
 
-        io.to(receiverId).emit("receiveMessage", message);
+            const fullMessage = await messageModel
+                .findById(message._id)
+                .populate("sender", "-password")
+                .populate("chat");
 
-        io.to(senderId).emit("receiveMessage", message);
+            io.to(receiverId).emit("receiveMessage", fullMessage);
 
+            io.to(socket.userId).emit("receiveMessage", fullMessage);
+
+        } catch (error) {
+            console.error("Socket sendMessage error:", error);
+        }
     });
 
 }

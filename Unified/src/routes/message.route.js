@@ -74,7 +74,7 @@ messageRouter.delete(
  * @name markMessagesReadController
  * @description mark messages as read
  * @route PUT /api/message/read/:chatId
- * @access private
+ * @accesas private
  */
 messageRouter.put(
     "/read/:chatId",
