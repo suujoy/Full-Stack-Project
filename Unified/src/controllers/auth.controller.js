@@ -91,14 +91,6 @@ export const loginController = async (req, res, next) => {
             });
         }
 
-        if (!user.verified) {
-            return res.status(400).json({
-                success: false,
-                message: "Please verify your email before login in",
-                err: "Email not verified",
-            });
-        }
-
         const token = jwt.sign(
             {
                 id: user._id,
@@ -150,40 +142,34 @@ export const getMeController = async (req, res) => {
     });
 };
 
+
 /**
- * @name verifyEmailController
- * @description verify user email
- * @route GET /api/auth/verify-email
- * @access public
- * @query {token}
+ * @name fatchAllUsersController
+ * @description get all users
+ * @route GET /api/auth/fetch-users
+ * @access private
  */
-export const verifyEmailController = async (req, res) => {
-    const token = req.query.token;
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+export const fetchUsersController = async (req, res) => {
+    const users = await userModel.find();
+    res.status(200).json({
+        success: true,
+        message: "Users fetched successfully",
+        users,
+    });
+};
 
-        const user = await userModel.findOne({ email: decoded.email });
+/**
+ * @name logoutController
+ * @description logout user
+ * @route POST /api/auth/logout
+ * @access private
+ */
 
-        if (!user) {
-            return res.status(404).json({
-                success: false,
-                message: "Invalid token",
-                err: "User not found",
-            });
-        }
-
-        user.verified = true;
-        await user.save();
-
-        const html = `<h1> hello ${user.name}</h1>`;
-
-        return res.send(html);
-    } catch (err) {
-        res.status(400).json({
-            success: false,
-            message: "Invalid token",
-            err: err.message,
-        });
-    }
+export const logoutController = async (req, res) => {
+    res.clearCookie("token");
+    res.status(200).json({
+        success: true,
+        message: "User logged out successfully",
+    });
 };

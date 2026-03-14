@@ -4,10 +4,11 @@ import {
     registerValidator,
 } from "../validation/auth.validate.js";
 import {
+    fetchUsersController,
     getMeController,
     loginController,
+    logoutController,
     registerController,
-    verifyEmailController,
 } from "../controllers/auth.controller.js";
 import { identifyUser } from "../middlewares/auth.middleware.js";
 
@@ -40,11 +41,21 @@ authRouter.post("/login", loginValidator, loginController);
 authRouter.get("/get-me", identifyUser, getMeController);
 
 /**
- * @name verifyEmailController
- * @description verify user email
- * @route GET /api/auth/verify-email
- * @access public
+ * @name fetchUsers
+ * @description fetch all users
+ * @route GET /api/auth/fetch-users
+ * @access private
  */
 
-authRouter.get("/verify-email", verifyEmailController);
+authRouter.get("/fetch-users", identifyUser, fetchUsersController);
+
+/**
+ * @name logout
+ * @description logout user
+ * @route GET /api/auth/logout
+ * @access private
+ */
+
+authRouter.get("/logout", identifyUser, logoutController);
+
 export default authRouter;
