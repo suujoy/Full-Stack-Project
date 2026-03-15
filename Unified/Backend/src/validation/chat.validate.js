@@ -13,7 +13,7 @@ const validate = (req, res, next) => {
 };
 
 export const accessChatValidator = [
-    body("userId")
+    body("receiverId")
         .notEmpty()
         .withMessage("userId is required")
         .isMongoId()

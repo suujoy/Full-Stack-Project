@@ -1,5 +1,11 @@
 import chatModel from "../models/chat.models.js";
-
+/**
+ * @name accessChatController
+ * @description access chat
+ * @route POST /api/chat
+ * @access private
+ * @body {receiverId}
+ */
 export const accessChatController = async (req, res, next) => {
     try {
         const { receiverId } = req.body;
@@ -56,7 +62,7 @@ export const getUserChatsController = async (req, res, next) => {
         res.status(200).json({
             success: true,
             message: "Chats fetched successfully",
-            chats,
+            chat: chats,
         });
     } catch (error) {
         next(error);

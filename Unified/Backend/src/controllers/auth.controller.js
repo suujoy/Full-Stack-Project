@@ -65,11 +65,11 @@ export const registerController = async (req, res, next) => {
 
 export const loginController = async (req, res, next) => {
     try {
-        const { username, email, password } = req.body;
+        const { identifier, password } = req.body;
 
         const user = await userModel
             .findOne({
-                $or: [{ username: username }, { email: email }],
+                $or: [{ username: identifier }, { email: identifier }],
             })
             .select("+password");
 
@@ -154,11 +154,11 @@ export const getMeController = async (req, res, next) => {
  */
 
 export const fetchUsersController = async (req, res) => {
-    const users = await userModel.find();
+    const users = await userModel.find().select("-password");
     res.status(200).json({
         success: true,
         message: "Users fetched successfully",
-        users,
+        users: users,
     });
 };
 
@@ -175,4 +175,42 @@ export const logoutController = async (req, res) => {
         success: true,
         message: "User logged out successfully",
     });
+};
+
+/**
+ * @name searchUsersController
+ * @description search users by name or username
+ * @route GET /api/auth/search-users?query=
+ * @access private
+ */
+
+export const searchUsersController = async (req, res, next) => {
+    try {
+        const { query } = req.query;
+
+        if (!query) {
+            return res.status(400).json({
+                success: false,
+                message: "Search query is required",
+            });
+        }
+
+        const users = await userModel
+            .find({
+                _id: { $ne: req.user.id },
+                $or: [
+                    { name: { $regex: query, $options: "i" } },
+                    { username: { $regex: query, $options: "i" } },
+                ],
+            })
+            .select("-password");
+
+        res.status(200).json({
+            success: true,
+            message: "Users fetched successfully",
+            users: users,
+        });
+    } catch (err) {
+        next(err);
+    }
 };

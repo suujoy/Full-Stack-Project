@@ -27,7 +27,7 @@ const chatRouter = Router();
  * @access:private
  * @body :{receiverId}
  */
-chatRouter.post("/", accessChatValidator, identifyUser, accessChatController);
+chatRouter.post("/", identifyUser, accessChatValidator, accessChatController);
 
 /**
  * @name:getUserChatsController
@@ -86,7 +86,7 @@ chatRouter.put(
 );
 
 /**
- * @name:removeUserFromGroupController
+ * @name:removeUserFromGroup
  * @description:remove user from group chat
  * @route :PUT /api/chat/group/remove
  * @access:private

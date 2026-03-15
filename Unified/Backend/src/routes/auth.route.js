@@ -9,6 +9,7 @@ import {
     loginController,
     logoutController,
     registerController,
+    searchUsersController,
 } from "../controllers/auth.controller.js";
 import { identifyUser } from "../middlewares/auth.middleware.js";
 
@@ -57,5 +58,15 @@ authRouter.get("/fetch-users", identifyUser, fetchUsersController);
  */
 
 authRouter.get("/logout", identifyUser, logoutController);
+
+
+/**
+ * @name searchUsers
+ * @description search users by name or username
+ * @route GET /api/auth/search-users?query=
+ * @access private
+*/
+
+authRouter.get("/search-users", identifyUser, searchUsersController);
 
 export default authRouter;

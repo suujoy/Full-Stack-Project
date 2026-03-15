@@ -39,13 +39,6 @@ export const registerValidator = [
     body("password")
         .notEmpty()
         .withMessage("Password is required")
-        .isStrongPassword({
-            minLength: 8,
-            minLowercase: 1,
-            minUppercase: 1,
-            minNumbers: 1,
-            minSymbols: 1,
-        })
         .withMessage(
             "Password must contain at least 8 characters, one uppercase letter, one lowercase letter, one number, and one symbol",
         ),
