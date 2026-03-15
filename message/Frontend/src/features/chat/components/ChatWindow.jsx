@@ -7,26 +7,18 @@ import "../styles/chatWindow.scss";
 
 const formatTime = (dateStr) => {
     if (!dateStr) return "";
-    return new Date(dateStr).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
+    return new Date(dateStr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 };
 
-const ChatWindow = () => {
+const ChatWindow = ({ onBack }) => {
     const { activeChat: chat } = useContext(ChatContext);
     const { user } = useContext(AuthContext);
     const { socket } = useContext(SocketContext);
     const {
-        messages,
-        loading,
-        handleGetMessages,
-        handleSendMessage,
-        handleEditMessage,
-        handleDeleteMessage,
-        addIncomingMessage,
-        updateEditedMessage,
-        removeDeletedMessage,
+        messages, loading,
+        handleGetMessages, handleSendMessage,
+        handleEditMessage, handleDeleteMessage,
+        addIncomingMessage, updateEditedMessage, removeDeletedMessage,
     } = useMessage();
 
     const [input, setInput] = useState("");
@@ -37,58 +29,44 @@ const ChatWindow = () => {
     const bottomRef = useRef(null);
     const typingTimeoutRef = useRef(null);
 
-    // Load messages when chat changes
     useEffect(() => {
         if (!chat?._id) return;
         handleGetMessages(chat._id);
-        // Join chat room for typing indicators
         socket?.emit("joinChat", chat._id);
-        return () => {
-            socket?.emit("leaveChat", chat._id);
-        };
+        return () => { socket?.emit("leaveChat", chat._id); };
     }, [chat?._id]);
 
-    // Scroll to bottom when messages change
     useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
-    // Socket real-time listeners
     useEffect(() => {
         if (!socket || !chat?._id) return;
+        const onMsg = (msg) => {
+            if (msg.chat?._id === chat._id || msg.chat === chat._id)
+                addIncomingMessage(msg);
+        };
+        const onEdited = (u) => updateEditedMessage(u);
+        const onDeleted = (id) => removeDeletedMessage(id);
+        const onTyping = ({ chatId }) => { if (chatId === chat._id) setIsTyping(true); };
+        const onStop = ({ chatId }) => { if (chatId === chat._id) setIsTyping(false); };
 
-        const onReceiveMessage = (message) => {
-            if (message.chat?._id === chat._id || message.chat === chat._id) {
-                addIncomingMessage(message);
-            }
-        };
-        const onMessageEdited = (updated) => updateEditedMessage(updated);
-        const onMessageDeleted = (messageId) => removeDeletedMessage(messageId);
-        const onTyping = ({ chatId }) => {
-            if (chatId === chat._id) setIsTyping(true);
-        };
-        const onStopTyping = ({ chatId }) => {
-            if (chatId === chat._id) setIsTyping(false);
-        };
-
-        socket.on("receiveMessage", onReceiveMessage);
-        socket.on("messageEdited", onMessageEdited);
-        socket.on("messageDeleted", onMessageDeleted);
+        socket.on("receiveMessage", onMsg);
+        socket.on("messageEdited", onEdited);
+        socket.on("messageDeleted", onDeleted);
         socket.on("typing", onTyping);
-        socket.on("stopTyping", onStopTyping);
-
+        socket.on("stopTyping", onStop);
         return () => {
-            socket.off("receiveMessage", onReceiveMessage);
-            socket.off("messageEdited", onMessageEdited);
-            socket.off("messageDeleted", onMessageDeleted);
+            socket.off("receiveMessage", onMsg);
+            socket.off("messageEdited", onEdited);
+            socket.off("messageDeleted", onDeleted);
             socket.off("typing", onTyping);
-            socket.off("stopTyping", onStopTyping);
+            socket.off("stopTyping", onStop);
         };
     }, [socket, chat?._id]);
 
     const handleInputChange = (e) => {
         setInput(e.target.value);
-        // Emit typing
         if (socket && chat?._id) {
             socket.emit("typing", { chatId: chat._id });
             clearTimeout(typingTimeoutRef.current);
@@ -108,32 +86,18 @@ const ChatWindow = () => {
     };
 
     const handleKeyDown = (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
     };
 
-    const startEdit = (msg) => {
-        setEditingId(msg._id);
-        setEditContent(msg.content);
-    };
-
-    const cancelEdit = () => {
-        setEditingId(null);
-        setEditContent("");
-    };
-
-    const submitEdit = async (messageId) => {
+    const startEdit = (msg) => { setEditingId(msg._id); setEditContent(msg.content); };
+    const cancelEdit = () => { setEditingId(null); setEditContent(""); };
+    const submitEdit = async (id) => {
         if (!editContent.trim()) return;
-        await handleEditMessage({ messageId, content: editContent.trim() });
+        await handleEditMessage({ messageId: id, content: editContent.trim() });
         cancelEdit();
     };
-
-    const confirmDelete = async (messageId) => {
-        if (window.confirm("Delete this message?")) {
-            await handleDeleteMessage(messageId);
-        }
+    const confirmDelete = async (id) => {
+        if (window.confirm("Delete this message?")) await handleDeleteMessage(id);
     };
 
     if (!chat) {
@@ -145,60 +109,42 @@ const ChatWindow = () => {
         );
     }
 
-    const otherParticipant = chat.participants?.find(
-        (p) => p._id !== user?._id
-    );
-    const chatName = chat.isGroup
-        ? chat.groupName
-        : otherParticipant?.name || "Unknown";
+    const otherParticipant = chat.participants?.find((p) => p._id !== user?._id);
+    const chatName = chat.isGroup ? chat.groupName : otherParticipant?.name || "Unknown";
 
     return (
         <div className="chat-window">
-            {/* Header */}
             <div className="chat-header">
-                <div className="cw-avatar">
-                    {chatName?.charAt(0).toUpperCase()}
-                </div>
+                {/* Back button — only visible on mobile */}
+                <button className="back-btn" onClick={onBack} title="Back">←</button>
+                <div className="cw-avatar">{chatName?.charAt(0).toUpperCase()}</div>
                 <div className="chat-info">
                     <p className="chat-name">{chatName}</p>
                     <span className="chat-status">
-                        {isTyping
-                            ? "typing..."
-                            : chat.isGroup
-                            ? `${chat.participants?.length} members`
+                        {isTyping ? "typing…"
+                            : chat.isGroup ? `${chat.participants?.length} members`
                             : "Direct message"}
                     </span>
                 </div>
             </div>
 
-            {/* Messages */}
             <div className="chat-body">
-                {loading && (
-                    <p className="no-messages">Loading messages...</p>
-                )}
+                {loading && <p className="no-messages">Loading messages…</p>}
                 {!loading && messages.length === 0 && (
                     <p className="no-messages">No messages yet — say hi! 👋</p>
                 )}
                 {messages.map((msg) => {
                     const isMine = msg.sender?._id === user?._id;
                     return (
-                        <div
-                            key={msg._id}
-                            className={`message ${isMine ? "mine" : "theirs"}`}
-                        >
+                        <div key={msg._id} className={`message ${isMine ? "mine" : "theirs"}`}>
                             {chat.isGroup && !isMine && (
-                                <span className="message-sender">
-                                    {msg.sender?.name}
-                                </span>
+                                <span className="message-sender">{msg.sender?.name}</span>
                             )}
-
                             {editingId === msg._id ? (
                                 <div className="message-edit">
                                     <input
                                         value={editContent}
-                                        onChange={(e) =>
-                                            setEditContent(e.target.value)
-                                        }
+                                        onChange={(e) => setEditContent(e.target.value)}
                                         onKeyDown={(e) => {
                                             if (e.key === "Enter") submitEdit(msg._id);
                                             if (e.key === "Escape") cancelEdit();
@@ -212,9 +158,7 @@ const ChatWindow = () => {
                                 </div>
                             ) : (
                                 <div className="message-bubble-wrap">
-                                    <div className="message-bubble">
-                                        {msg.content}
-                                    </div>
+                                    <div className="message-bubble">{msg.content}</div>
                                     {isMine && (
                                         <div className="message-actions">
                                             <button onClick={() => startEdit(msg)} title="Edit">✎</button>
@@ -223,17 +167,13 @@ const ChatWindow = () => {
                                     )}
                                 </div>
                             )}
-
-                            <span className="message-time">
-                                {formatTime(msg.createdAt)}
-                            </span>
+                            <span className="message-time">{formatTime(msg.createdAt)}</span>
                         </div>
                     );
                 })}
                 <div ref={bottomRef} />
             </div>
 
-            {/* Input */}
             <div className="chat-input">
                 <input
                     placeholder="Type a message…"
@@ -242,12 +182,8 @@ const ChatWindow = () => {
                     onKeyDown={handleKeyDown}
                     disabled={sending}
                 />
-                <button
-                    className="send-btn"
-                    onClick={sendMessage}
-                    disabled={sending || !input.trim()}
-                    title="Send"
-                >
+                <button className="send-btn" onClick={sendMessage}
+                    disabled={sending || !input.trim()} title="Send">
                     ➤
                 </button>
             </div>
