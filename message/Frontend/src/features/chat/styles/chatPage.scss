@@ -1,0 +1,31 @@
+.chat-page {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg-base);
+
+    .chat-container {
+        flex: 1;
+        display: flex;
+        overflow: hidden;
+
+        .chat-sidebar {
+            width: var(--sidebar-width);
+            flex-shrink: 0;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-surface);
+            overflow: hidden;
+        }
+
+        .chat-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+    }
+}

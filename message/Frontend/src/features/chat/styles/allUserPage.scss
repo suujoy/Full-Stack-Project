@@ -1,0 +1,84 @@
+.allUsers {
+    padding: 28px 32px;
+    height: 100%;
+    overflow-y: auto;
+    background: var(--bg-base);
+
+    &__header {
+        margin-bottom: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        h2 { font-size: 1.15rem; font-weight: 600; color: var(--text-primary); }
+        .user-count {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-full);
+            padding: 3px 10px;
+        }
+    }
+
+    &__grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+        gap: 12px;
+    }
+}
+
+.userCard {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.15s, transform 0.15s;
+
+    &:hover { border-color: var(--border-strong); transform: translateY(-1px); }
+
+    &__avatar {
+        width: 42px; height: 42px;
+        border-radius: var(--radius-full);
+        background: var(--accent-subtle);
+        border: 1px solid rgba(29,212,201,0.18);
+        color: var(--accent);
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 700; font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    &__info { flex: 1; min-width: 0; }
+    &__name { font-size: 0.9rem; font-weight: 500; color: var(--text-primary); margin: 0; }
+    &__username { font-size: 0.78rem; color: var(--text-muted); margin: 2px 0 0; }
+
+    &__button {
+        padding: 5px 13px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-strong);
+        background: transparent;
+        color: var(--text-secondary);
+        font-size: 0.82rem;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        flex-shrink: 0;
+        transition: all 0.15s;
+
+        &:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: var(--accent-subtle);
+        }
+    }
+}
+
+.loading {
+    padding: 40px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}

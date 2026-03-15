@@ -1,0 +1,102 @@
+.register-page {
+    min-height: 100vh;
+    background: var(--bg-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &::before {
+        content: "";
+        position: fixed;
+        top: -180px; left: 50%;
+        transform: translateX(-50%);
+        width: 500px; height: 500px;
+        background: radial-gradient(circle, rgba(29,212,201,0.07) 0%, transparent 70%);
+        pointer-events: none;
+    }
+
+    .auth-card {
+        width: 100%;
+        max-width: 420px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        animation: fadeUp 0.35s ease;
+
+        .auth-brand {
+            text-align: center;
+            margin-bottom: 2rem;
+
+            h1 {
+                font-size: 1.9rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                letter-spacing: -0.02em;
+                span { color: var(--accent); }
+            }
+
+            p {
+                margin-top: 0.35rem;
+                font-size: 0.875rem;
+                color: var(--text-secondary);
+            }
+        }
+
+        form { display: flex; flex-direction: column; gap: 1rem; }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+
+            label {
+                font-size: 0.75rem;
+                font-weight: 500;
+                color: var(--text-secondary);
+                text-transform: uppercase;
+                letter-spacing: 0.07em;
+            }
+
+            .form-control {
+                padding: 0.65rem 0.85rem;
+                background: var(--bg-elevated);
+                border: 1px solid var(--border);
+                border-radius: var(--radius);
+                color: var(--text-primary);
+                outline: none;
+                transition: border-color 0.15s, box-shadow 0.15s;
+
+                &::placeholder { color: var(--text-muted); }
+                &:focus {
+                    border-color: var(--accent);
+                    box-shadow: 0 0 0 3px var(--accent-subtle);
+                }
+            }
+        }
+
+        .button {
+            margin-top: 0.4rem;
+            background: var(--accent);
+            color: #031412;
+            font-weight: 600;
+            width: 100%;
+            padding: 0.75rem;
+        }
+
+        .auth-footer {
+            margin-top: 1.2rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+
+            a { color: var(--accent); font-weight: 500;
+                &:hover { opacity: 0.8; } }
+        }
+    }
+}
+
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

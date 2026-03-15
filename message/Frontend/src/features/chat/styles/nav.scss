@@ -1,0 +1,90 @@
+.navbar {
+    height: var(--nav-height);
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+
+    &__left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+
+        .navbar__logo { height: 32px; object-fit: contain; }
+
+        .navbar__brand {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            span { color: var(--accent); }
+        }
+    }
+
+    &__center {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    &__link {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        padding: 5px 10px;
+        border-radius: var(--radius);
+        transition: all 0.15s;
+        &:hover { color: var(--text-primary); background: var(--bg-elevated); }
+    }
+
+    &__right {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .profile {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+
+        &__avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            background: var(--accent-subtle);
+            border: 1px solid rgba(29,212,201,0.25);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        &__name {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+    }
+
+    .logout {
+        padding: 5px 14px;
+        border-radius: var(--radius);
+        border: 1px solid var(--border-strong);
+        background: transparent;
+        color: var(--text-secondary);
+        font-size: 0.85rem;
+        cursor: pointer;
+        transition: all 0.15s;
+
+        &:hover {
+            border-color: #e05252;
+            color: #e05252;
+            background: rgba(224,82,82,0.06);
+        }
+    }
+}
