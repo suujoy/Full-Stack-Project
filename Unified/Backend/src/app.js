@@ -7,9 +7,13 @@ import roomRouter from "./routes/unifiedRoom.route.js";
 import handleError from "./middlewares/error.middleware.js";
 import cors from "cors";
 import path from "path";
+import { fileURLToPath } from "url";
+
+// Fix __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(express.static('./public'))
 
 app.use(express.json());
 app.use(cookieParser());
@@ -17,18 +21,23 @@ app.use(
     cors({
         origin: process.env.CLIENT_URL || "http://localhost:5173",
         credentials: true,
-    })
+    }),
 );
 
+// API routes
 app.use("/api/auth", authRouter);
 app.use("/api/chat", chatRouter);
 app.use("/api/message", messageRouter);
 app.use("/api/room", roomRouter);
 
-app.use(handleError);
+// Serve React frontend static files
+app.use(express.static(path.join(__dirname, "../../Frontend/dist")));
 
-app.use('*nane',(req,res)=>{
-    res.sendFile(path.join(__dirname,'../public/index.html'))
-})
+// Catch-all: let React Router handle client-side routes
+app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../Frontend/dist", "index.html"));
+});
+
+app.use(handleError);
 
 export default app;
