@@ -34,7 +34,7 @@ app.use("/api/room", roomRouter);
 app.use(express.static(path.join(__dirname, "../../Frontend/dist")));
 
 // Catch-all: let React Router handle client-side routes
-app.get("*", (req, res) => {
+app.get("*name", (req, res) => {
     res.sendFile(path.join(__dirname, "../../Frontend/dist", "index.html"));
 });
 
