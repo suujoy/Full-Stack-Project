@@ -1,30 +1,37 @@
 import { useEffect, useState } from "react";
-import { useAuth } from "../../auth/hooks/useAuth";
 import { useChat } from "../hooks/useChat";
 import { useNavigate } from "react-router";
+import { fetchUsers } from "../../auth/service/auth.api";
 import "../styles/createGroupPage.scss";
 
 const CreateGroupPage = () => {
-    const { users, handleFetchUsers, loading } = useAuth();
     const { handleCreateGroupChat } = useChat();
     const navigate = useNavigate();
-
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [groupName, setGroupName] = useState("");
 
     useEffect(() => {
-        handleFetchUsers();
+        setLoading(true);
+        fetchUsers()
+            .then((res) => setUsers(res.users ?? []))
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, []);
 
     const toggleUser = (id) => {
         setSelectedUsers((prev) =>
-            prev.includes(id) ? prev.filter((u) => u !== id) : [...prev, id]
+            prev.includes(id) ? prev.filter((u) => u !== id) : [...prev, id],
         );
     };
 
     const createGroup = async () => {
         if (!groupName.trim() || selectedUsers.length < 2) return;
-        await handleCreateGroupChat({ groupName: groupName.trim(), users: selectedUsers });
+        await handleCreateGroupChat({
+            groupName: groupName.trim(),
+            users: selectedUsers,
+        });
         navigate("/chat");
     };
 
@@ -40,7 +47,10 @@ const CreateGroupPage = () => {
                     value={groupName}
                     onChange={(e) => setGroupName(e.target.value)}
                 />
-                <button onClick={createGroup} disabled={selectedUsers.length < 2 || !groupName.trim()}>
+                <button
+                    onClick={createGroup}
+                    disabled={selectedUsers.length < 2 || !groupName.trim()}
+                >
                     Create
                 </button>
                 {selectedUsers.length > 0 && (
@@ -57,7 +67,9 @@ const CreateGroupPage = () => {
                         className={`userItem ${selectedUsers.includes(u._id) ? "active" : ""}`}
                         onClick={() => toggleUser(u._id)}
                     >
-                        <div className="avatar">{u.name?.charAt(0).toUpperCase()}</div>
+                        <div className="avatar">
+                            {u.name?.charAt(0).toUpperCase()}
+                        </div>
                         <div className="details">
                             <p>{u.name}</p>
                             <span>@{u.username}</span>

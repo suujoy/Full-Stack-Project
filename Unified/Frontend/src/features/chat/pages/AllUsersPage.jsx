@@ -1,16 +1,22 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { useChat } from "../hooks/useChat";
 import { useNavigate } from "react-router";
+import { fetchUsers } from "../../auth/service/auth.api";
 import "../styles/allUserPage.scss";
 
 const AllUsersPage = () => {
-    const { handleFetchUsers, users, loading } = useAuth();
     const { handleAccessChat } = useChat();
     const navigate = useNavigate();
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        handleFetchUsers();
+        setLoading(true);
+        fetchUsers()
+            .then((res) => setUsers(res.users ?? []))
+            .catch(console.error)
+            .finally(() => setLoading(false));
     }, []);
 
     const startChat = async (userId) => {
