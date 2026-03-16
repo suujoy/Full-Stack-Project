@@ -1,4 +1,4 @@
-import "../styles/ChatHeader.scss";
+import "../styles/chatHeader.scss";
 
 const ChatHeader = ({ chat }) => {
     if (!chat) {

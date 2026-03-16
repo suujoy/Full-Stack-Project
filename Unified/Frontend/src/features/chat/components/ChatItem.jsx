@@ -1,4 +1,4 @@
-import "./ChatItem.scss";
+import "../styles/chatItem.scss";
 
 const ChatItem = ({ chat, onSelect }) => {
     const chatName = chat.isGroup

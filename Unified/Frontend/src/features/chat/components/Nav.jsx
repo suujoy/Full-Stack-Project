@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import { useState, useEffect, useRef } from "react";
-import "../styles/Nav.scss";
+import "../styles/nav.scss";
 import { useAuth } from "../../auth/hooks/useAuth";
 import { searchUser } from "../../auth/service/auth.api";
 import SearchList from "../../auth/components/SearchList";
