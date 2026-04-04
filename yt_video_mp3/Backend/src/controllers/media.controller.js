@@ -2,6 +2,13 @@ import { getAvailableQualities, downloadMedia } from "../services/download.servi
 import fsSync from "fs";
 import fs from "fs/promises";
 
+const getStatusCode = (message = "") => {
+    if (message.includes("URL is required") || message.includes("Invalid URL")) {
+        return 400;
+    }
+    return 500;
+};
+
 // Get video qualities
 export const getQualitiesController = async (req, res) => {
     try {
@@ -12,7 +19,7 @@ export const getQualitiesController = async (req, res) => {
         res.status(200).json(result);
 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(getStatusCode(err?.message)).json({ error: err.message });
     }
 };
 
@@ -56,6 +63,6 @@ export const downloadController = async (req, res) => {
         });
 
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(getStatusCode(err?.message)).json({ error: err.message });
     }
 };
